@@ -1,0 +1,293 @@
+<head>
+  <style>
+    .glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -ms-animation: spin .7s infinite linear;
+    -webkit-animation: spinw .7s infinite linear;
+    -moz-animation: spinm .7s infinite linear;
+    }
+ 
+   @keyframes spin {
+      from { transform: scale(1) rotate(0deg);}
+      to { transform: scale(1) rotate(360deg);}
+   }
+
+   @-webkit-keyframes spinw {
+      from { -webkit-transform: rotate(0deg);}
+      to { -webkit-transform: rotate(360deg);}
+   }
+
+   @-moz-keyframes spinm {
+      from { -moz-transform: rotate(0deg);}
+      to { -moz-transform: rotate(360deg);}
+   }
+  .pac-container {
+    background-color: #FFF;
+    z-index: 20;
+    position: fixed;
+    display: inline-block;
+    float: left;
+  }
+  .modal-backdrop {
+    z-index: -1;
+  }
+  </style>
+</head>
+
+<!-- I could probably write a generic function for these. -->
+<script>
+function create_error_message(element, message) {
+   /*
+   <element>
+   <div class="alert alert-danger" role="alert">
+      Error: message
+   </div>
+   */
+   div = $('<div/>');
+   div.html("Error: "+message);
+   div.addClass('alert alert-danger error');
+   div.insertAfter(element);
+}
+
+  $('#submit-username').on("click", function(e) {
+    e.preventDefault();
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#username-status').html(span);
+    $.post('/settings/account/',
+      $('form#username-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+          $('#id_new_username').val(data.username);
+          $('.error').remove();
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+          create_error_message($('#id_new_username'), data.errors[0]);
+        }
+        $('#username-status').html(span);
+      });
+  });
+
+  $('#submit-fullname').on("click", function(e) {
+    e.preventDefault();
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#fullname-status').html(span);
+    $.post('/settings/account/',
+      $('form#fullname-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+          $('#id_first_name').val(data.first_name);
+          $('#id_last_name').val(data.last_name);
+          $('.error').remove();
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+          create_error_message($('#id_first_name'), data.errors[0]);
+        }
+        $('#fullname-status').html(span);
+      });
+  });
+
+  $('#submit-password').on("click", function(e) {
+    e.preventDefault();
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#password-status').html(span);
+    $.post('/settings/account/',
+      $('form#password-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+          $('.error').remove();
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+          create_error_message($('#id_password2'), data.errors[0]);
+        }
+        $('#password-status').html(span);
+      });
+  });
+
+  
+  $('#checkbox-container').children().on("click", function(e) {
+    $.post('/settings/account/',
+      $('form#notification-form').serialize(),
+      function (data) {
+        console.log(data);
+      });
+  });
+  
+
+$(function() {
+  $('#id_new_username').val("{{ user.get_username }}");
+  $('#id_first_name').val("{{ user.first_name }}");
+  $('#id_last_name').val("{{ user.last_name }}");
+  $('#id_email').val("{{ user.email }}");
+  {% for choice in notification_choices %}
+    $('input[value="{{ choice }}"]').prop('checked', true);
+  {% endfor %}
+});
+</script>
+
+<form id="username-form" class="form-horizontal">
+
+{% csrf_token %}
+
+<fieldset>
+
+<!-- Form Name -->
+<legend>Account Settings</legend>
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="username">Username</label>  
+  <div class="col-md-4">
+  {{ form.new_username }}
+  <!--input id="id_new_username" name="username" type="text" placeholder="{{ user.get_username }}" class="form-control input-md"-->
+  <button style="margin-top:10px;" id="submit-username" name="singlebutton" class="btn btn-primary">Rename</button>
+  </div>
+  <div id="username-status" class="col-md-2"></div>
+</div>
+</form>
+
+<form id="password-form">
+
+{% csrf_token %}
+
+<!-- Password input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="passwordinput">New Password</label>
+  <div class="col-md-4">
+    {{ form.password1 }}
+    <!--input id="passwordinput" name="passwordinput" type="password" placeholder="*****" class="form-control input-md"-->
+  </div>
+  <div id="password-status" class="col-md-2"></div>
+</div>
+
+<!-- Password input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="passwordconfirminput">Confirm Password</label>
+  <div class="col-md-4">
+    {{ form.password2 }}
+    <!--input id="passwordconfirminput" name="passwordconfirminput" type="password" placeholder="*****" class="form-control input-md"-->
+    <button style="margin-top:10px;" id="submit-password" name="singlebutton" class="btn btn-primary">Change Password</button>
+  </div>
+</div>
+
+</form>
+
+
+<form id="fullname-form" class="form-horizontal">
+
+{% csrf_token %}
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="username">Full Name</label>  
+  <div class="col-md-2">
+  {{ form.first_name }}
+  <button style="margin-top:10px;" id="submit-fullname" name="singlebutton" class="btn btn-primary">Rename</button>
+  </div>
+  <div class="col-md-2">
+  {{ form.last_name }}
+  <!--input id="id_new_username" name="username" type="text" placeholder="{{ user.get_username }}" class="form-control input-md"-->
+  </div>
+  <div id="fullname-status" class="col-md-2"></div>
+</div>
+</form>
+
+<form id="email-form" class="form-horizontal">
+
+{% csrf_token %}
+
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="username">Email</label>  
+  <div class="col-md-4">
+  {{ form.email }}
+  <!--input id="id_new_username" name="username" type="text" placeholder="{{ user.get_username }}" class="form-control input-md"-->
+  <button style="margin-top:10px;" id="submit-email" name="singlebutton" class="btn btn-primary">Change</button>
+  </div>
+  <div id="email-status" class="col-md-2"></div>
+</div>
+</form>
+
+
+<form id="notification-form">
+
+{% csrf_token %}
+
+<legend>Notification Preferences</legend>
+<!-- Multiple Checkboxes -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="notification-checkboxes">Notification Settings</label>
+  <div class="col-md-8" id="checkbox-container">
+    {% for notification in form.notifications %}
+      <div class="checkbox">
+         {{ notification }}
+      </div>
+    {% endfor %}
+     <!--div class="checkbox">
+       <label for="notification-checkboxes-0">
+         <input type="checkbox" name="notification-checkboxes" id="notification-checkboxes-0" value="1">
+         Option one
+       </label>
+      </div>
+     <div class="checkbox">
+       <label for="notification-checkboxes-1">
+         <input type="checkbox" name="notification-checkboxes" id="notification-checkboxes-1" value="2">
+         Option two
+       </label>
+      </div-->
+  </div>
+</div>
+</fieldset>
+
+<fieldset>
+
+<legend>Add a New Device</legend>
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="new-device">New Device</label>
+  <div class="col-md-8">
+    <button data-toggle="modal" data-target="#tutorialModal" id="new-device" name="new-device" class="btn btn-success">Click to Add Device</button>
+  </div>
+</div>
+</fieldset>
+</form>
+
+<!-- tutorialModal -->
+<div class="modal fade" id="tutorialModal" tabindex="-1" role="dialog" aria-labelledby="tutorialModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+    </div>
+  </div>
+</div>
+
+<script>
+$(function() {
+  $.get('/new_device/',
+    {
+     page: 'first'
+    },
+      function(data) {
+        $('.modal-content').html(data);
+  });
+});
+</script>
+
+<script>
+   $('#help').on('click', function(e) {
+      $('#modalBody').html("Help page");
+   });
+   $('#enterKey').on('click', function(e) {
+      $.get('/new_device/key/', function(data) {
+        $('#modalBody').html(data);
+      });
+   });
+</script>

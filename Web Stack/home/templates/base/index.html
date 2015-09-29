@@ -1,0 +1,41 @@
+{% extends "_layouts/base.html" %}
+
+{% block page_title %}SEADS - Home{% endblock %}
+{% block page_class %}home-page{% endblock %}
+{% block content %}
+
+{% include "base/navbar.html" %}
+<!-- This code is taken from http://getbootstrap.com/examples/jumbotron/ -->
+</nav>
+
+    <div class="jumbotron">
+      <div class="container">
+        <div class="col-md-2">
+          <img style="max-width:150px; margin:auto; display:block;" src="{{ STATIC_URL }}/webapp/img/seads-logo.png">
+        </div>
+        <div class="col-md-10">
+          <h2>Smart Energy Analysis and Disaggregation</h2>
+          <p>Cutting edge research and new embedded processing solutions that aim create a system capable interfacing with a cloud service without relying on said service for processing and analysis of data.</p>
+          <p><a href="/data/" class="btn btn-primary btn-lg" role="button">Dashboard »</a></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-6">
+          <h2>Abstract</h2>
+          <p>The SEAD project aims to create a power system monitoring device which measures real/apparent power, power factor, and non-intrusively detects when devices are operational. While other non-intrusive load disaggregation techniques currently exist, our project will leverage cutting edge research and new embedded processing solutions to create a system capable interfacing with a cloud service without relying on said service for processing and analysis of data.</p>
+          <p><a class="btn btn-default" href="javascript:void(0)" role="button">View details »</a></p>
+        </div>
+        <div class="col-md-6">
+          <h2>Objective</h2>
+          <p>The objective of this project is to create a system which measures power usage in a system, and reports to an online database. This system will sample and buffer current and voltage data at a frequency at least 20kHz. Analysis of the spectral energy distribution as a stochastic source will be completed in the embedded system and fits of known device power signatures will be matched and reported on. These events are sent to an online database for aggregation and presentation to an end user. A database and web-app will be developed alongside the hardware to demonstrate/test the scalability of the system and API specifications.</p>
+          <p><a class="btn btn-default" href="javascript:void(0)" role="button">View details »</a></p>
+       </div>
+      </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,850 @@
+
+<head>
+  <style>
+    .controls {
+      margin-top: 16px;
+      border: 1px solid transparent;
+      border-radius: 2px 0 0 2px;
+      box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      height: 32px;
+      outline: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    }
+    
+    .custom-header{
+      text-align: center;
+      padding: 3px;
+      background: #000;
+      color: #fff;
+    }
+
+    #pac-input {
+      background-color: #fff;
+      padding: 0 11px 0 13px;
+      width: 400px;
+      font-family: Roboto;
+      font-size: 15px;
+      font-weight: 300;
+      text-overflow: ellipsis;
+    }
+
+    #pac-input:focus {
+      border-color: #4d90fe;
+      margin-left: -1px;
+      padding-left: 14px;  /* Regular padding-left + 1. */
+      width: 401px;
+    }
+
+    .pac-container {
+      font-family: Roboto;
+    }
+
+    #type-selector {
+      color: #fff;
+      background-color: #4d90fe;
+      padding: 5px 11px 0px 11px;
+    }
+
+    #type-selector label {
+      font-family: Roboto;
+      font-size: 13px;
+      font-weight: 300;
+    }
+    .glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -ms-animation: spin .7s infinite linear;
+    -webkit-animation: spinw .7s infinite linear;
+    -moz-animation: spinm .7s infinite linear;
+    }
+ 
+   @keyframes spin {
+      from { transform: scale(1) rotate(0deg);}
+      to { transform: scale(1) rotate(360deg);}
+   }
+
+   @-webkit-keyframes spinw {
+      from { -webkit-transform: rotate(0deg);}
+      to { -webkit-transform: rotate(360deg);}
+   }
+
+   @-moz-keyframes spinm {
+      from { -moz-transform: rotate(0deg);}
+      to { -moz-transform: rotate(360deg);}
+   }
+  </style>
+</head>
+
+<script>
+
+$('.btn').on('click', function(e) {
+	e.preventDefault();
+});
+
+function check_device_status(element) {
+   element.addClass('disabled');
+   element.removeClass('btn-danger');
+   element.removeClass('btn-success');
+   $('#btn-icon').removeClass('glyphicon-ok');
+   $('#btn-icon').removeClass('glyphicon-remove');
+   $('#btn-icon').addClass('glyphicon-refresh');
+   $('#btn-icon').addClass('glyphicon-refresh-animate');
+   var btn = element;
+   $.get('/settings/device/status/',
+      {'serial': {{ device.serial }}},
+      function(status) {
+         btn.removeClass('disabled');
+         if (status.connected) {
+            btn.html('');
+            jQuery('<span/>', {
+               id: 'btn-icon',
+               class: 'glyphicon glyphicon-ok'
+            }).appendTo(btn)
+            btn.append(' Connected');
+            btn.addClass('btn-success');
+            $('#btn-icon').addClass('glyphicon-ok');
+            $('#btn-icon').removeClass('glyphicon-refresh');
+            $('#btn-icon').removeClass('glyphicon-refresh-animate');
+         } else {
+            btn.html('');
+            jQuery('<span/>', {
+               id: 'btn-icon',
+               class: 'glyphicon glyphicon-remove'
+            }).appendTo(btn)
+            btn.append(' Disconnected');
+            btn.addClass('btn-danger');
+            $('#btn-icon').addClass('glyphicon-remove');
+            $('#btn-icon').removeClass('glyphicon-refresh');
+            $('#btn-icon').removeClass('glyphicon-refresh-animate');
+         }
+      }
+   );
+}
+
+function make_ul(list) {
+    li_list = []
+    for (var i in list) {
+        var li = $("<li/>");
+        li.html(list[i]);
+        li_list.push(li);
+    }
+    console.log(li_list);
+    return li_list;
+}
+
+$('#btn-status').on('click', function(e) {
+   check_device_status($(this));
+});
+
+$(function() {
+  $('#id_new_name').val("{{ device }}");
+  var share_with_users = [
+  {% for user in device.share_with.all %}
+    {{ user.pk }},
+  {% endfor %}
+  ]
+  $('#share_with_select').val(share_with_users);
+  check_device_status($('#btn-status'));
+  {% for choice in utility_company_choices %}
+      $('#company-dropdown').val("{{ choice }}")
+  {% endfor %}
+
+  {% for choice in rate_plan_choices %}
+      $('#rate-dropdown').val("{{ choice }}")
+  {% endfor %}
+
+  {% for choice in territory_choices %}
+      $('#territory-dropdown').val("{{ choice }}")
+  {% endfor %}
+  $('#channel_1-dropdown').val("{{ device.channel_1.pk }}");
+  $('#channel_2-dropdown').val("{{ device.channel_2.pk }}");
+  $('#channel_3-dropdown').val("{{ device.channel_3.pk }}");
+});
+
+  $('#submit-name').on("click", function(e) {
+    e.preventDefault();
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#name-status').html(span);
+    $.post('/settings/device/{{ device.serial }}',
+      $('form#name-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+          $('#id_new_name').val(data.device.name);
+          $('#'+data.device.serial).html(data.device.name+'<span class="caret"></span>');
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+        }
+        $('#name-status').html(span);
+      });
+  });
+
+  $('#share_with_select').change(function() {
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#share-status').html(span);
+    $.post('/settings/device/{{ device.serial }}',
+      $('form#share-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+        }
+        $('#share-status').html(span);
+      });
+  });
+  
+  $('#channel_1-dropdown').on("change", function(e) {
+    if ($('#channel_1-dropdown').val() == 6) {
+        // User wants a custom circuit
+        $.get('/api/appliance-api/',
+            function(data) {
+                $('#channel_1-appliance-list').html($("<select id='channel_1-appliance-select' multiple='multiple'/>"));
+                $('#channel_1-appliance-select').multiSelect({
+                    selectableHeader: "<div class='custom-header'>Selectable items</div>",
+                    selectionHeader: "<div class='custom-header'>Selected items</div>",
+                    afterSelect: function(values){
+                        $.post('/settings/device/{{ device.serial }}',
+                            {
+                                custom_channel: 1,
+                                add: true,
+                                appliance: values[0],
+                            },
+                            function(data) {
+                                console.log(data);
+                            }
+                        );
+                    },
+                    afterDeselect: function(values){
+                        $.post('/settings/device/{{ device.serial }}',
+                            {
+                                custom_channel: 1,
+                                add: false,
+                                appliance: values,
+                            },
+                            function(data) {
+                                console.log(data);
+                            }
+                        );
+                    }
+                });
+                var selected = []
+                for(var i in data) {
+                    $('#channel_1-appliance-select').multiSelect('addOption', { value: data[i].serial, text: data[i].name, index: 0 });
+                }
+                console.log(data);
+            }
+        );
+    } else {
+        var span = $("<span/>");
+        span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+        $('#channel_1-status').html(span);
+        $.post('/settings/device/{{ device.serial }}', 
+          $('form#device-status-form').serialize(),
+          function (data) {
+            span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+            if (data.success) {
+              span.addClass("glyphicon glyphicon-ok");
+            } else {
+              span.addClass("glyphicon glyphicon-remove");
+            }
+            $('#channel_1-appliance-list').html(make_ul(data.appliances.channel_1));
+            $('#channel_1-status').html(span);
+          });
+      }
+  });
+  
+  $('#channel_2-dropdown').on("change", function(e) {
+    if ($('#channel_2-dropdown').val() == 6) {
+        // User wants a custom circuit
+        $.get('/api/appliance-api/',
+            function(data) {
+                $('#channel_2-appliance-list').html($("<select id='channel_2-appliance-select' multiple='multiple'/>"));
+                $('#channel_2-appliance-select').multiSelect({
+                    selectableHeader: "<div class='custom-header'>Selectable items</div>",
+                    selectionHeader: "<div class='custom-header'>Selected items</div>",
+                    afterSelect: function(values){
+                        $.post('/settings/device/{{ device.serial }}',
+                            {
+                                custom_channel: 2,
+                                add: true,
+                                appliance: values[0],
+                            },
+                            function(data) {
+                                console.log(data);
+                            }
+                        );
+                    },
+                    afterDeselect: function(values){
+                        $.post('/settings/device/{{ device.serial }}',
+                            {
+                                custom_channel: 2,
+                                add: false,
+                                appliance: values,
+                            },
+                            function(data) {
+                                console.log(data);
+                            }
+                        );
+                    }
+                });
+                var selected = []
+                for(var i in data) {
+                    $('#channel_2-appliance-select').multiSelect('addOption', { value: data[i].serial, text: data[i].name, index: 0 });
+                }
+            }
+        );
+    } else {
+        var span = $("<span/>");
+        span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+        $('#channel_2-status').html(span);
+        $.post('/settings/device/{{ device.serial }}', 
+          $('form#device-status-form').serialize(),
+          function (data) {
+            span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+            if (data.success) {
+              span.addClass("glyphicon glyphicon-ok");
+            } else {
+              span.addClass("glyphicon glyphicon-remove");
+            }
+            $('#channel_2-appliance-list').html(make_ul(data.appliances.channel_2));
+            $('#channel_2-status').html(span);
+          });
+      }
+  });
+  
+  $('#channel_3-dropdown').on("change", function(e) {
+    if ($('#channel_3-dropdown').val() == 6) {
+        // User wants a custom circuit
+        $.get('/api/appliance-api/',
+            function(data) {
+                $('#channel_3-appliance-list').html($("<select id='channel_3-appliance-select' multiple='multiple'/>"));
+                $('#channel_3-appliance-select').multiSelect({
+                    selectableHeader: "<div class='custom-header'>Selectable items</div>",
+                    selectionHeader: "<div class='custom-header'>Selected items</div>",
+                    afterSelect: function(values){
+                        $.post('/settings/device/{{ device.serial }}',
+                            {
+                                custom_channel: 3,
+                                add: true,
+                                appliance: values[0],
+                            },
+                            function(data) {
+                                console.log(data);
+                            }
+                        );
+                    },
+                    afterDeselect: function(values){
+                        $.post('/settings/device/{{ device.serial }}',
+                            {
+                                custom_channel: 3,
+                                add: false,
+                                appliance: values,
+                            },
+                            function(data) {
+                                console.log(data);
+                            }
+                        );
+                    }
+                });
+                var selected = []
+                for(var i in data) {
+                    $('#channel_3-appliance-select').multiSelect('addOption', { value: data[i].serial, text: data[i].name, index: 0 });
+                }
+            }
+        );
+    } else {
+        var span = $("<span/>");
+        span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+        $('#channel_3-status').html(span);
+        $.post('/settings/device/{{ device.serial }}', 
+          $('form#device-status-form').serialize(),
+          function (data) {
+            span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+            if (data.success) {
+              span.addClass("glyphicon glyphicon-ok");
+            } else {
+              span.addClass("glyphicon glyphicon-remove");
+            }
+            $('#channel_3-appliance-list').html(make_ul(data.appliances.channel_3));
+            $('#channel_3-status').html(span);
+          });
+      }
+  });
+
+  $('#company-dropdown').on("change", function(e) {
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#company-status').html(span);
+    $.post('/settings/device/{{ device.serial }}', 
+      $('form#utility-company-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+        }
+        $('#company-status').html(span);
+      });
+  });
+  $('#rate-dropdown').on("change", function(e) {
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#rate-plan-status').html(span);
+    $.post('/settings/device/{{ device.serial }}', 
+      $('form#rate-plan-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+        }
+        $('#rate-plan-status').html(span);
+      });
+  });
+  $('#territory-dropdown').on("change", function(e) {
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $('#territory-status').html(span);
+    $.post('/settings/device/{{ device.serial }}', 
+      $('form#territory-form').serialize(),
+      function (data) {
+        span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+        if (data.success) {
+          span.addClass("glyphicon glyphicon-ok");
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+        }
+        $('#territory-status').html(span);
+      });
+  });
+
+$('#submit-remove-device').on("click", function(e) {
+  e.preventDefault();
+  $('#remove-status').html(span);
+  if ($('#remove-name').val() == "{{ device.name }}") {
+    var span = $("<span/>");
+    span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+    $.post('/settings/device/remove/{{ device.serial }}',
+      {submitted_name: $('#remove-name').val()},
+      function(data) {
+        if (data.success) {
+          $('#modal-body').html('Device Removed.');
+        } else {
+          span.addClass("glyphicon glyphicon-remove");
+          span.removeClass('glyphicon-refresh');
+          span.removeClass('glyphicon-refresh-animate');
+          $('#remove-status').html(span);
+        }
+      }
+    );
+  }
+});
+</script>
+
+<form id="name-form" class="form-horizontal">
+{% csrf_token %}
+<fieldset>
+
+<!-- Form Name -->
+<legend>Device Settings</legend>
+
+<!-- Text input-->
+<!-- Text input-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="name">Device Name</label>  
+  <div class="col-md-4">
+  {{ form.new_name }}
+  <!--input id="username" name="id_new_name" value="{{ device }}" type="text" class="form-control input-md"-->
+  </div>
+  <div class="col-md-2">
+  <button id="submit-name" name="singlebutton" class="btn btn-primary">Rename</button>
+  </div>
+  <div id="name-status" class="col-md-2"></div>
+</div>
+
+</form>
+
+<form id="share-form" class="form-horizontal">
+{% csrf_token %}
+<div class="form-group">
+  <label class="col-md-4 control-label" for="name">Share Device Data With</label>  
+  <div class="col-md-4">
+  {{ form.share_with }}
+  </div>
+  <div class="col-md-2">
+  </div>
+  <div id="share-status" class="col-md-2"></div>
+</div>
+
+</form>
+
+<form id='device-status-form' class='form-horizontal'>
+{% csrf_token %}
+<!-- Status icon-->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="textinput">Connection Status</label>  
+  <div class="col-md-4">
+  {% if device.online %}
+  	<button id="btn-status" class="btn btn-success">
+      <span id="btn-icon" class="glyphicon glyphicon-ok"></span> Connected
+   </button>
+  {% else %}
+  	<button id="btn-status" class="btn btn-danger">
+      <span id="btn-icon" class="glyphicon glyphicon-remove"></span> Checking Status...
+   </button>
+  {% endif %}
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="col-md-4 control-label" for="textinput">Kilowatt-Hour Usage This Month</label>  
+  <div class="col-md-4">
+  <input value="{{ device.kilowatt_hours_monthly }}" type="text" class="form-control input-md" readonly>
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="col-md-4 control-label" for="textinput">Current Tier</label>  
+  <div class="col-md-4">
+  <input value="{{ device.devicewebsettings.current_tier }}" type="text" class="form-control input-md" readonly>
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="col-md-4 control-label">Channel 1</label>  
+  <div class="col-md-4">
+    {{ form.channel_1 }}
+  </div>
+  <div id="channel_1-status" class="col-md-2"></div>
+  <div id="channel_1-description" class="col-md-4">Common Appliances:
+    <ul id="channel_1-appliance-list">
+    {% for appliance in device.channel_1.appliances.all %}
+        <li>{{ appliance }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="col-md-4 control-label">Channel 2</label>  
+  <div class="col-md-4">
+    {{ form.channel_2 }}
+  </div>
+  <div id="channel_2-status" class="col-md-2"></div>
+  <div id="channel_2-description" class="col-md-4">Common Appliances:
+    <ul id="channel_2-appliance-list">
+    {% for appliance in device.channel_2.appliances.all %}
+        <li>{{ appliance }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<div class="form-group">
+  <label class="col-md-4 control-label">Channel 3</label>  
+  <div class="col-md-4">
+    {{ form.channel_3 }}
+  </div>
+  <div id="channel_3-status" class="col-md-2"></div>
+  <div id="channel_3-description" class="col-md-4">Common Appliances:
+    <ul id="channel_3-appliance-list">
+    {% for appliance in device.channel_3.appliances.all %}
+        <li>{{ appliance }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
+<form id='utility-company-form' class='form-horizontal'>
+{% csrf_token %}
+<fieldset>
+
+<legend>Utility Information</legend>
+
+<!-- Select Basic -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="selectbasic">Utility Company</label>
+  <div class="col-md-6">
+    {{ form.utility_companies }}
+  </div>
+  <div id="company-status" class="col-md-2"></div>
+</div>
+
+</form>
+
+<form id='rate-plan-form' class='form-horizontal'>
+{% csrf_token %}
+<!-- Select Basic -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="selectbasic">Rate Plan</label>
+  <div class="col-md-6">
+    {{ form.rate_plans }}
+  </div>
+  <div id="rate-plan-status" class="col-md-2"></div>
+</div>
+
+</form>
+
+<form id='territory-form' class='form-horizontal'>
+{% csrf_token %}
+<!-- Select Basic -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="selectbasic">Territory</label>
+  <div class="col-md-6">
+    {{ form.territories }}
+  </div>
+  <div id="territory-status" class="col-md-2"></div>
+</div>
+
+</fieldset>
+</form>
+
+<form id='location-form' class='form-horizontal'>
+{% csrf_token %}
+<fieldset>
+
+<legend>Location Information</legend>
+
+<div class="form-group">
+	<label class="col-md-4 control-label" for="selectbasic">Location</label>
+   <input id="pac-input" class="controls" type="text" placeholder="Search Box">
+   <div style="height:500px;" id="map-canvas"></div>
+	</div>
+</div>
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="singlebutton">Save Location</label>
+  <div class="col-md-4">
+    <button id="save-location" name="singlebutton" class="btn btn-primary">Submit</button>
+  </div>
+  <div id="location-status" class="col-md-2"></div>
+</div>
+</fieldset>
+</form>
+
+
+<form id='export-form' class='form-horizontal'>
+{% csrf_token %}
+<fieldset>
+
+<legend>Export Data</legend>
+
+<div class="form-group">
+    <label class="col-md-4 control-label" for="selectbasic">Export Date Range</label>
+    <div id="reportrange" class="col-md-4 style="background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc>
+        <i class="glyphicon glyphicon-calendar fa fa-calendar"></i>
+        <span></span> <b class="caret"></b>
+    </div>
+    <div id="export-info" class="col-md-4">
+    <span>Selecting a date range older than {{ device.data_retention_policy }} months will trigger an archive retrieval job. <a href="#">Learn More</a></span>
+    </div>
+</div>
+</fieldset>
+</form>
+
+
+<form id='remove-device-form' class='form-horizontal'>
+<fieldset>
+
+<legend>Danger Zone</legend>
+
+{% if farmer_installed %}
+<div class="form-group">
+  <label class="col-md-4 control-label" for="textinput">IP Address</label>  
+  <div class="col-md-4">
+    <input value="{{ device.ip_address }}" type="text" class="form-control input-md" readonly>
+  </div>
+</div>
+{% endif %}
+
+<!-- Button -->
+<div class="form-group">
+  <label class="col-md-4 control-label" for="remove-device">Remove Device</label>
+  <div class="col-md-4">
+    <button id="remove-device" data-toggle="modal" data-target="#remove-device-modal" name="remove-device" class="btn btn-danger">Click to Remove This Device</button>
+  </div>
+</div>
+
+</fieldset>
+</form> 
+
+<!-- remove-device-modal -->
+<div class="modal fade" id="remove-device-modal" tabindex="-1" role="dialog" aria-labelledby="remove-device-modal-label" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="myModalLabel">Remove {{ device.name }}?</h4>
+      </div>
+      <div class="modal-body" id="modalBody">
+        This action cannot be undone. All data associated with this device will also be deleted.
+        <br><br>
+        If you are sure you want to do this, enter the name of the device below:
+        <br><br><br>
+       <div class='col-md-6 col-md-offset-2'>
+        <input id="remove-name" name="id-remove-name" placeholder="Device Name" style="text-align:center;" type="text" class="form-control input-md">
+       </div>
+       <div class='col-md-2' id='remove-status'></div>
+       <button type="button" id="submit-remove-device" class="btn btn-danger btn-block">Remove Device</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+$(function() {
+ 
+    $('#reportrange span').html(moment().subtract(29, 'days').format('MMMM D, YYYY') + ' - ' + moment().format('MMMM D, YYYY'));
+ 
+    $('#reportrange').daterangepicker({
+        format: 'MM/DD/YYYY',
+        startDate: moment().subtract(29, 'days'),
+        endDate: moment(),
+        showDropdowns: true,
+        showWeekNumbers: true,
+        timePicker: true,
+        timePickerIncrement: 1,
+        timePicker12Hour: true,
+        ranges: {
+           'Today': [moment(), moment()],
+           'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+           'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+           'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+           'This Month': [moment().startOf('month'), moment()],
+           'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')],
+           'This Year': [moment().subtract(1, 'year').startOf('year'), moment().subtract(1, 'year').endOf('year')]
+        },
+        opens: 'left',
+        drops: 'up',
+        buttonClasses: ['btn', 'btn-sm'],
+        applyClass: 'btn-primary',
+        cancelClass: 'btn-default',
+        separator: ' to ',
+        locale: {
+            applyLabel: 'Export',
+            cancelLabel: 'Cancel',
+            fromLabel: 'From',
+            toLabel: 'To',
+            customRangeLabel: 'Custom',
+            daysOfWeek: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr','Sa'],
+            monthNames: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+            firstDay: 1
+        }
+    }, function(start, end, label) {
+        window.location = '/settings/device/export/?serial={{ device.serial }}&start='+start.unix()+'&end='+end.unix();
+        $('#reportrange span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    });
+ 
+});
+</script>
+
+
+<script>
+
+$(function() {
+   initialize();
+});
+
+var $idown;  // Keep it outside of the function, so it's initialized once.
+function downloadURL(url) {
+  if ($idown) {
+    $idown.attr('src',url);
+  } else {
+    $idown = $('<iframe>', { id:'idown', src:url }).hide().appendTo('body');
+  }
+}
+
+var map, placeSearch, autocomplete, marker;
+
+function initialize() {
+  var mapOptions = {
+    scrollwheel: false,
+    zoom: 17
+  };
+  map = new google.maps.Map(document.getElementById('map-canvas'),
+      mapOptions);
+  {% if device.position %}
+  var pos = new google.maps.LatLng({{ device.position.latitude }},
+                                   {{ device.position.longitude}});
+  {% else %}
+  var pos = new google.maps.LatLng(0,0);
+  {% endif %}
+
+  marker = new google.maps.Marker({
+    map: map,
+    position: pos,
+    title: 'Location of {{ device.name }}',
+    draggable: true
+  });
+
+  map.setCenter(pos);
+
+  var input = /** @type {HTMLInputElement} */(
+      document.getElementById('pac-input'));
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+  var autocomplete = new google.maps.places.Autocomplete(input);
+  autocomplete.bindTo('bounds', map);
+
+  google.maps.event.addListener(autocomplete, 'place_changed', function() {
+    marker.setVisible(false);
+    var place = autocomplete.getPlace();
+    if (!place.geometry) {
+      return;
+    }
+
+    // If the place has a geometry, then present it on a map.
+    if (place.geometry.viewport) {
+      map.fitBounds(place.geometry.viewport);
+    } else {
+      map.setCenter(place.geometry.location);
+      map.setZoom(17);  // Why 17? Because it looks good.
+    }
+    marker.setIcon(/** @type {google.maps.Icon} */({
+      url: place.icon,
+      size: new google.maps.Size(71, 71),
+      origin: new google.maps.Point(0, 0),
+      anchor: new google.maps.Point(17, 34),
+      scaledSize: new google.maps.Size(35, 35)
+    }));
+    marker.setPosition(place.geometry.location);
+    marker.setVisible(true);
+
+  });
+}
+
+$('#save-location').on("click", function(e) {
+  e.preventDefault();
+  var span = $('<span/>');
+  span.addClass('glyphicon-refresh glyphicon-refresh-animate');
+  $('#location-status').html(span);
+  latitude = marker.getPosition().A;
+  longitude = marker.getPosition().F;
+  $.post('/settings/device/location/{{ device.serial }}',
+    {
+      latitude: latitude,
+      longitude: longitude,
+    },
+    function(data) {
+      span.removeClass('glyphicon-refresh glyphicon-refresh-animate');
+      if (data.success) {
+         span.addClass("glyphicon glyphicon-ok");
+      } else {
+         span.addClass("glyphicon glyphicon-remove");
+      }
+    }
+  );
+});
+
+</script>

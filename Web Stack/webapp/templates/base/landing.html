@@ -1,0 +1,41 @@
+{% extends "_layouts/base.html" %}
+
+{% block page_title %}SEADS - Dashboard{% endblock %}
+{% block page_class %}landing-page{% endblock %}
+{% block content %}
+
+
+{% include "base/navbar.html" %}
+
+
+<script src="{{STATIC_URL}}webapp/zoomcharts/lib/zoomcharts-dev.js"></script>
+<script src='https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=places' type="text/javascript"></script>
+<script src="{{STATIC_URL}}webapp/js/daynightoverlay.min.js"></script>
+
+
+<div>
+   <div>
+      <div style="margin:20px;" id='content'></div>
+   </div>
+</div>
+
+<script type="text/javascript">
+$.get("/charts/default_chart/", function( ajax_data ) {
+   $('#content').html(ajax_data);
+});
+
+$('.nav-bar.account').on('click', function() {
+   $.get("/account/", function ( ajax_data ) {
+      $('#content').html(ajax_data);
+   });
+});
+
+$('.side-bar.dashboard').on('click', function() {
+   $.get("/dashboard/", function ( ajax_data ) {
+      $('#content').html(ajax_data);
+   });
+});
+
+</script>
+
+{% endblock content %}

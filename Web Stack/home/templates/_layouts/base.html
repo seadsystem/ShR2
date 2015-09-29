@@ -1,0 +1,157 @@
+{% load staticfiles %}
+
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+
+  <!-- Use the .htaccess and remove these lines to avoid edge case issues.
+       More info: h5bp.com/i/378 -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <meta name="apple-touch-fullscreen" content="yes" />
+
+  <link rel="apple-touch-icon" href="{% static 'webapp/img/apple-touch-icon.png' %}" />
+
+  <title>{% block page_title %}{{ _("SEADS") }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{% endblock %}">
+  <meta name="author" content="{% block meta_author %}{% endblock %}">
+
+  <link rel="shortcut icon" href="{% static 'webapp/img/favicon.ico' %}" type="image/x-icon">
+  <link rel="icon" href="{% static 'webapp/img/favicon.ico' %}" type="image/x-icon">
+
+  <!-- Mobile viewport optimized: h5bp.com/viewport -->
+  <meta name="viewport" content="width=device-width">
+
+  {% block meta %}
+  {% endblock %}
+  
+  <link href="{% static 'webapp/font-awesome-4.1.0/css/font-awesome.min.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'webapp/css/screen.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'webapp/css/jquery.sidr.light.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'webapp/css/daterangepicker-bs3.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'webapp/css/multi-select.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'webapp/css/loader.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'webapp/css/c3.min.css' %}" rel="stylesheet" type="text/css">
+
+  {# use the CDN to get bootstrap css. can not be inside compress css block #}
+  {% block cdn_css %}
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+  {% endblock cdn_css %}
+
+  {% block css %}
+  <link href="{% static 'webapp/css/sb-admin-2.css' %}" rel="stylesheet" type="text/css">
+  <!--link href="{% static 'webapp/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css"-->
+  {{block.super}}
+  {% endblock css %}
+  <!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
+
+  <!-- All JavaScript at the bottom, except this Modernizr build.
+       Modernizr enables HTML5 elements & feature detects for optimal performance.
+       Create your own custom Modernizr build: www.modernizr.com/download/ -->
+  <script src="{% static 'webapp/js/modernizr.min.js' %}"></script>
+  <script src="{% static 'webapp/js/jquery.min.js' %}"></script>
+  <script src="{% static 'webapp/js/jquery.autotab.js' %}"></script>
+  <script src="{% static 'webapp/js/date.js' %}"></script>
+  <script src="{% static 'webapp/js/jquery.sidr.min.js' %}"></script>
+  <script src="{% static 'webapp/js/jquery.bootpag.min.js' %}"></script>
+  <script src="{% static 'webapp/js/moment.js' %}"></script>
+  <script type="text/javascript" src="{% static 'webapp/js/d3.min.js' %}"></script>
+  <script type="text/javascript" src="{% static 'webapp/js/radialProgress.js' %}"></script>
+  <script type="text/javascript" src="{% static 'webapp/js/c3.min.js' %}"></script>
+
+</head>
+<body style="font-family: 'Helvetica Neue', Helvetica, Roboto, Arial, sans-serif; margin-top:51px;" class="{% block body_class %}{% endblock %}" {% block body_attributes %}{% endblock %}>
+{% block body %}
+  <!-- Prompt IE 6 users to install Chrome Frame. Remove this if you support IE 6.
+       chromium.org/developers/how-tos/chrome-frame-getting-started -->
+  <!--[if lt IE 7]>
+    <p class="chromeframe">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> or <a href="http://www.google.com/chromeframe/?redirect=true">activate Google Chrome Frame</a> to improve your experience.</p>
+  <![endif]-->
+  <header>
+  </header>
+
+  <div role="main">
+    {% block content %}{% endblock %}
+  </div>
+
+  <footer>
+    {% block footer %}
+    <div class="row-fluid">
+      <hr>
+      <div class="col-sm-12">
+      Time as reported by your browser: <span id='localtime'></span>
+      </div>
+    </div>
+    <div class="row-fluid">
+      <div class="col-sm-2"></div>
+      <div class="col-sm-2">
+        <a href="http://www.ucsc.edu/">
+          <img height="50" style="max-width:140px; width:100%; height:100%; display:block; margin-left:auto; margin-right:auto" src="{% static 'webapp/img/ucsc-logo.png' %}"/>
+        </a>
+      </div>
+      <div class="col-sm-2">
+        <a href="http://www.soe.ucsc.edu/">
+          <img height="50" style="max-width:140px; width:100%; height:100%; display:block; margin-left:auto; margin-right:auto" src="{% static 'webapp/img/baskin-logo.png' %}"/>
+        </a>
+      </div>
+      <div class="col-sm-2">
+        <a href="http://www.citris-uc.org/">
+          <img height="50" style="max-width:140px; width:100%; height:100%; display:block; margin-left:auto; margin-right:auto" src="{% static 'webapp/img/citris-logo.png' %}"/>
+        </a>
+      </div>
+      <div class="col-sm-2">
+        <a href="http://www.djangoproject.com/"><img style="max-width:140px; width:100%; height:100%; display:block; margin-left:auto; margin-right:auto" src="https://www.djangoproject.com/m/img/badges/djangopowered126x54.gif" border="0" alt="Powered by Django." title="Powered by Django." /></a>
+      </div>
+      <div class="col-sm-2"></div>
+    </div>
+    {% endblock footer %}
+  </footer>
+
+
+  <!-- JavaScript at the bottom for fast page loading -->
+
+  <!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+  {% block cdn_js %}
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+  {% endblock cdn_js %}
+  
+   <!-- Custom Theme JavaScript -->
+   <script src="{% static 'webapp/js/sb-admin-2.js' %}"></script>
+   <script src="{% static 'webapp/js/metisMenu.min.js' %}"></script>
+   <script src="{% static 'webapp/js/eventCodes.js' %}"></script>
+   <script src="{% static 'webapp/js/daterangepicker.js' %}"></script>
+   <script src="{% static 'webapp/js/jquery.multi-select.js' %}"></script>
+
+  <!-- scripts concatenated and minified via django-compressor -->
+  
+  <!-- end scripts -->
+
+  <!-- Asynchronous Google Analytics snippet. -->
+  <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-56958817-1', 'auto');
+  ga('send', 'pageview');
+
+  </script>
+  <script>
+  function updateLocalTime() {
+    $('#localtime').html(new Date());
+    setTimeout(updateLocalTime, 1000);
+  }
+  $(function() {
+    updateLocalTime();
+  });
+  </script>
+{% endblock %}
+</body>
+</html>
